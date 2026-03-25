@@ -82,7 +82,7 @@ export default function MarketPage({ params }: MarketPageProps) {
               })}
               <div className="flex items-center gap-2 text-muted-foreground sm:ml-auto">
                 <span>⊞</span>
-                <span>Polymarket</span>
+                <span>Sence?</span>
               </div>
             </div>
           )}

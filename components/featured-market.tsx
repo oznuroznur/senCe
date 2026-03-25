@@ -127,7 +127,7 @@ export function FeaturedMarket() {
               <div className="absolute bottom-3 right-3 flex items-center gap-2 text-xs sm:bottom-4 sm:right-4">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-red-500 font-medium">LIVE</span>
-                <span className="text-muted-foreground">• ⊞ Polymarket</span>
+                <span className="text-muted-foreground">• ⊞ Sence?</span>
               </div>
             </div>
           </div>
