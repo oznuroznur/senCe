@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Search, HelpCircle } from "lucide-react"
-import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs"
+import { ClerkLoaded, ClerkLoading, Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { navCategories } from "@/lib/mock-data"
@@ -10,11 +10,10 @@ import { useState } from "react"
 
 export function Navbar() {
   const [activeCategory, setActiveCategory] = useState("Trending")
-  const { isSignedIn } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center  gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
           <svg
@@ -52,12 +51,14 @@ export function Navbar() {
 
         {/* Auth buttons */}
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          {isSignedIn ? (
-            <UserButton />
-          ) : (
-            <>
+          <ClerkLoading>
+            <div className="h-9 w-20 rounded-md bg-secondary/60" />
+            <div className="h-9 w-24 rounded-md bg-secondary/60" />
+          </ClerkLoading>
+          <ClerkLoaded>
+            <Show when="signed-out">
               <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+                <Button variant="ghost" size="sm" className="inline-flex">
                   Log In
                 </Button>
               </SignInButton>
@@ -66,13 +67,16 @@ export function Navbar() {
                   Sign Up
                 </Button>
               </SignUpButton>
-            </>
-          )}
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
+          </ClerkLoaded>
         </div>
       </div>
 
       {/* Category Navigation */}
-      <nav className="flex items-center gap-1 overflow-x-auto px-3 py-2 sm:px-4 scrollbar-hide">
+      <nav className="flex items-center justify-center gap-1 overflow-x-auto px-3 py-2 sm:px-4 scrollbar-hide">
         {navCategories.map((category) => (
           <button
             key={category}

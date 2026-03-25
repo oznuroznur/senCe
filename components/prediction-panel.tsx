@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
+import { useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Market } from "@/lib/mock-data"
@@ -14,6 +16,7 @@ interface PredictionPanelProps {
 export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes" }: PredictionPanelProps) {
   const [choice, setChoice] = useState<"yes" | "no">(initialChoice)
   const [points, setPoints] = useState("")
+  const { isSignedIn } = useAuth()
 
   useEffect(() => {
     setChoice(initialChoice)
@@ -121,9 +124,15 @@ export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes"
       </div>
 
       {/* Place prediction */}
-      <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-base font-medium mb-3">
-        Place Prediction
-      </Button>
+      {isSignedIn ? (
+        <Button className="mb-3 h-12 w-full bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700">
+          Place Prediction
+        </Button>
+      ) : (
+        <Button asChild className="mb-3 h-12 w-full bg-[#0066FF] text-base font-medium text-white hover:bg-[#0052CC]">
+          <Link href="/sign-in">Sign In to Place Prediction</Link>
+        </Button>
+      )}
 
       <p className="text-xs text-muted-foreground text-center mb-4">
         By placing a prediction, you agree to the <span className="underline cursor-pointer">Terms of Use</span>.

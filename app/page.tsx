@@ -6,8 +6,9 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col lg:flex-row gap-8">
+            <HomeSidebar />
         <FeaturedMarket />
-        <HomeSidebar />
+    
       </div>
       <MarketList />
     </div>
