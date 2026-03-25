@@ -17,10 +17,10 @@ export function LeaderboardTable() {
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className="w-16 text-center">Rank</TableHead>
-            <TableHead>Trader</TableHead>
+            <TableHead>Participant</TableHead>
             <TableHead className="text-right">Points</TableHead>
             <TableHead className="text-right">Win Rate</TableHead>
-            <TableHead className="text-right">Total Trades</TableHead>
+            <TableHead className="text-right">Predictions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

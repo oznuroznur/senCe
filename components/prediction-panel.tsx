@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { Market } from "@/lib/mock-data"
@@ -8,22 +8,26 @@ import type { Market } from "@/lib/mock-data"
 interface PredictionPanelProps {
   market: Market
   selectedOutcome?: string
+  initialChoice?: "yes" | "no"
 }
 
-export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProps) {
-  const [side, setSide] = useState<"buy" | "sell">("buy")
-  const [choice, setChoice] = useState<"yes" | "no">("yes")
-  const [amount, setAmount] = useState("")
+export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes" }: PredictionPanelProps) {
+  const [choice, setChoice] = useState<"yes" | "no">(initialChoice)
+  const [points, setPoints] = useState("")
 
-  const yesPrice = market.yesPercentage
-  const noPrice = 100 - market.yesPercentage
+  useEffect(() => {
+    setChoice(initialChoice)
+  }, [initialChoice])
 
-  const amountNum = parseFloat(amount) || 0
-  const potentialReturn = choice === "yes"
-    ? amountNum / (yesPrice / 100)
-    : amountNum / (noPrice / 100)
+  const yesPercent = market.yesPercentage
+  const noPercent = 100 - market.yesPercentage
+  const totalPool = market.totalVolume.replace(/Vol\.?/gi, "Pool")
 
-  const quickAmounts = [1, 5, 10, 100]
+  const pointsNum = parseFloat(points) || 0
+  const selectedPercent = choice === "yes" ? yesPercent : noPercent
+  const payoutPreview = selectedPercent > 0 ? pointsNum * (100 / selectedPercent) : 0
+
+  const quickPoints = [10, 50, 100, 250]
 
   return (
     <div className="rounded-xl bg-card border border-border p-4 lg:sticky lg:top-20">
@@ -35,36 +39,23 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
         <span className="font-medium line-clamp-1">{selectedOutcome || market.title}</span>
       </div>
 
-      {/* Buy/Sell tabs */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-4">
-          <button
-            onClick={() => setSide("buy")}
-            className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
-              side === "buy"
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Buy
-          </button>
-          <button
-            onClick={() => setSide("sell")}
-            className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
-              side === "sell"
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Sell
-          </button>
+      <div className="mb-4 rounded-lg border border-border bg-secondary/20 p-3">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          YES vs NO Distribution
+        </p>
+        <div className="mb-2 flex h-2 overflow-hidden rounded-full">
+          <div className="bg-emerald-500" style={{ width: `${yesPercent}%` }} />
+          <div className="bg-red-500" style={{ width: `${noPercent}%` }} />
         </div>
-        <Button variant="ghost" size="sm" className="text-muted-foreground text-xs">
-          Market
-          <svg className="ml-1 h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </Button>
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium text-emerald-500">YES {yesPercent}%</span>
+          <span className="font-medium text-red-500">NO {noPercent}%</span>
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between rounded-lg border border-border bg-secondary/10 p-3 text-sm">
+        <span className="text-muted-foreground">Participation Trend</span>
+        <span className="font-medium">{totalPool}</span>
       </div>
 
       {/* Yes/No buttons */}
@@ -77,7 +68,7 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
               : "bg-secondary text-muted-foreground hover:bg-secondary/80"
           }`}
         >
-          Yes {yesPrice}¢
+          YES
         </Button>
         <Button
           onClick={() => setChoice("no")}
@@ -87,64 +78,64 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
               : "bg-secondary text-muted-foreground hover:bg-secondary/80"
           }`}
         >
-          No {noPrice}¢
+          NO
         </Button>
       </div>
 
-      {/* Amount input */}
+      {/* Points input */}
       <div className="mb-4">
-        <label className="text-sm text-muted-foreground mb-2 block">Amount</label>
+        <label className="text-sm text-muted-foreground mb-2 block">Points</label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-2xl font-medium text-muted-foreground">$</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl font-medium text-muted-foreground">P</span>
           <Input
             type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={points}
+            onChange={(e) => setPoints(e.target.value)}
             placeholder="0"
             className="h-14 pl-8 text-2xl font-medium bg-transparent border-0 border-b border-border rounded-none focus-visible:ring-0"
           />
         </div>
       </div>
 
-      {/* Quick amount buttons */}
+      {/* Quick points buttons */}
       <div className="grid grid-cols-3 gap-2 mb-4 sm:grid-cols-5">
-        {quickAmounts.map((amt) => (
+        {quickPoints.map((amt) => (
           <Button
             key={amt}
             variant="outline"
             size="sm"
-            onClick={() => setAmount((prev) => (parseFloat(prev) || 0) + amt + "")}
+            onClick={() => setPoints((prev) => (parseFloat(prev) || 0) + amt + "")}
             className="flex-1 text-xs"
           >
-            +${amt}
+            +{amt}
           </Button>
         ))}
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setAmount("1000")}
+          onClick={() => setPoints("1000")}
           className="flex-1 text-xs"
         >
           Max
         </Button>
       </div>
 
-      {/* Trade button */}
+      {/* Place prediction */}
       <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-base font-medium mb-3">
-        Trade
+        Place Prediction
       </Button>
 
       <p className="text-xs text-muted-foreground text-center mb-4">
-        By trading, you agree to the <span className="underline cursor-pointer">Terms of Use</span>.
+        By placing a prediction, you agree to the <span className="underline cursor-pointer">Terms of Use</span>.
       </p>
 
-      {/* Potential return */}
-      {amountNum > 0 && (
+      {/* Payout preview */}
+      {pointsNum > 0 && (
         <div className="rounded-lg bg-secondary p-3 text-sm">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Potential return</span>
+            <span className="text-muted-foreground">Payout preview</span>
             <span className="font-medium text-emerald-500">
-              ${potentialReturn.toFixed(2)} ({((potentialReturn / amountNum - 1) * 100).toFixed(0)}%)
+              {payoutPreview.toFixed(1)} pts ({((payoutPreview / pointsNum - 1) * 100).toFixed(0)}%)
             </span>
           </div>
         </div>

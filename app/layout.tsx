@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { ClerkProvider } from '@clerk/nextjs'
 import { Navbar } from '@/components/navbar'
 import './globals.css'
 
@@ -9,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Sence? - Prediction Market Platform',
-  description: 'Trade on the outcome of events with points. Predict sports, politics, crypto, and more.',
+  description: 'Make point-based predictions on sports, politics, crypto, and more.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -42,9 +43,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans antialiased min-h-screen bg-background text-foreground">
-        <Navbar />
-        <main>{children}</main>
-        <Analytics />
+        <ClerkProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Analytics />
+        </ClerkProvider>
       </body>
     </html>
   )

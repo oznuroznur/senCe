@@ -8,7 +8,7 @@ export default function LeaderboardPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Leaderboard</h1>
         <p className="text-muted-foreground">
-          Top traders ranked by total points earned
+          Top participants ranked by total points earned
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function LeaderboardPage() {
               <TrendingUp className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Markets Traded</p>
+              <p className="text-sm text-muted-foreground">Predictions Placed</p>
               <p className="text-xl font-semibold">1,234</p>
             </div>
           </div>
@@ -42,7 +42,7 @@ export default function LeaderboardPage() {
               <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Active Traders</p>
+              <p className="text-sm text-muted-foreground">Active Predictors</p>
               <p className="text-xl font-semibold">5,678</p>
             </div>
           </div>

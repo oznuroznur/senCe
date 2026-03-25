@@ -11,6 +11,21 @@ interface MarketCardProps {
 export function MarketCard({ market }: MarketCardProps) {
   const yesPercent = market.yesPercentage ?? 50
   const noPercent = 100 - yesPercent
+  const trendPoints = [
+    Math.max(5, yesPercent - 8),
+    Math.max(5, yesPercent - 5),
+    Math.max(5, yesPercent - 2),
+    Math.min(95, yesPercent + 1),
+    Math.min(95, yesPercent + 3),
+    yesPercent,
+  ]
+  const trendPath = trendPoints
+    .map((value, idx) => {
+      const x = idx * 20
+      const y = 36 - (value / 100) * 30
+      return `${idx === 0 ? "M" : "L"} ${x} ${y}`
+    })
+    .join(" ")
 
   return (
     <Link
@@ -25,7 +40,7 @@ export function MarketCard({ market }: MarketCardProps) {
       </div>
 
       {/* Title */}
-      <h3 className="font-semibold text-lg leading-snug mb-6 text-foreground line-clamp-2 min-h-[3.5rem]">
+      <h3 className="font-semibold text-lg leading-snug mb-6 text-foreground line-clamp-2 min-h-14">
         {market.title}
       </h3>
 
@@ -51,6 +66,16 @@ export function MarketCard({ market }: MarketCardProps) {
           className="bg-red-500 transition-all duration-300"
           style={{ width: `${noPercent}%` }}
         />
+      </div>
+
+      <div className="mb-4 rounded-lg border border-border/70 bg-secondary/20 p-2.5">
+        <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span>Prediction Trend</span>
+          <span>YES {yesPercent}%</span>
+        </div>
+        <svg viewBox="0 0 100 40" className="h-10 w-full">
+          <path d={trendPath} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
       </div>
 
       {/* Footer */}

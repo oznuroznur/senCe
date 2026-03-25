@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Search, HelpCircle, Wallet } from "lucide-react"
+import { Search, HelpCircle } from "lucide-react"
+import { SignInButton, SignUpButton, UserButton, useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { navCategories } from "@/lib/mock-data"
@@ -9,6 +10,7 @@ import { useState } from "react"
 
 export function Navbar() {
   const [activeCategory, setActiveCategory] = useState("Trending")
+  const { isSignedIn } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
@@ -50,15 +52,22 @@ export function Navbar() {
 
         {/* Auth buttons */}
         <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
-            Log In
-          </Button>
-          <Button size="sm" className="hidden bg-[#0066FF] text-white hover:bg-[#0052CC] sm:inline-flex">
-            Sign Up
-          </Button>
-          <Button variant="ghost" size="icon" className="text-muted-foreground">
-            <Wallet className="h-5 w-5" />
-          </Button>
+          {isSignedIn ? (
+            <UserButton />
+          ) : (
+            <>
+              <SignInButton mode="modal">
+                <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
+                  Log In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button size="sm" className="bg-[#0066FF] text-white hover:bg-[#0052CC]">
+                  Sign Up
+                </Button>
+              </SignUpButton>
+            </>
+          )}
         </div>
       </div>
 
