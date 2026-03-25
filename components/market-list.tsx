@@ -15,9 +15,9 @@ export function MarketList() {
 
   return (
     <section className="mt-8">
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-xl font-semibold">All markets</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button variant="ghost" size="icon" className="text-muted-foreground">
             <Search className="h-5 w-5" />
           </Button>

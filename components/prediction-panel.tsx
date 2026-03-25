@@ -26,13 +26,13 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
   const quickAmounts = [1, 5, 10, 100]
 
   return (
-    <div className="rounded-xl bg-card border border-border p-4 sticky top-20">
+    <div className="rounded-xl bg-card border border-border p-4 lg:sticky lg:top-20">
       {/* Header with outcome name */}
       <div className="flex items-center gap-3 mb-4">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-lg">
           {market.icon}
         </div>
-        <span className="font-medium">{selectedOutcome || market.title}</span>
+        <span className="font-medium line-clamp-1">{selectedOutcome || market.title}</span>
       </div>
 
       {/* Buy/Sell tabs */}
@@ -68,7 +68,7 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
       </div>
 
       {/* Yes/No buttons */}
-      <div className="flex gap-2 mb-4">
+      <div className="grid grid-cols-1 gap-2 mb-4 sm:grid-cols-2">
         <Button
           onClick={() => setChoice("yes")}
           className={`flex-1 h-12 text-base font-medium ${
@@ -107,7 +107,7 @@ export function PredictionPanel({ market, selectedOutcome }: PredictionPanelProp
       </div>
 
       {/* Quick amount buttons */}
-      <div className="flex gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-4 sm:grid-cols-5">
         {quickAmounts.map((amt) => (
           <Button
             key={amt}

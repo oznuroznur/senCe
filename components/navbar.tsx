@@ -12,9 +12,9 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
-      <div className="flex h-14 items-center justify-center gap-4 px-4">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -28,7 +28,8 @@ export function Navbar() {
         </Link>
 
         {/* Search */}
-        <div className="relative flex-1 max-w-md">
+        <div className="order-3 mt-1 w-full sm:order-2 sm:mt-0 sm:flex-1 sm:max-w-md">
+          <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
@@ -38,20 +39,21 @@ export function Navbar() {
           <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-xs text-muted-foreground">
             /
           </kbd>
+          </div>
         </div>
 
         {/* How it works */}
-        <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" size="sm" className="hidden gap-2 text-muted-foreground hover:text-foreground lg:inline-flex">
           <HelpCircle className="h-4 w-4" />
           How it works
         </Button>
 
         {/* Auth buttons */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex">
             Log In
           </Button>
-          <Button size="sm" className="bg-[#0066FF] hover:bg-[#0052CC] text-white">
+          <Button size="sm" className="hidden bg-[#0066FF] text-white hover:bg-[#0052CC] sm:inline-flex">
             Sign Up
           </Button>
           <Button variant="ghost" size="icon" className="text-muted-foreground">
@@ -61,7 +63,7 @@ export function Navbar() {
       </div>
 
       {/* Category Navigation */}
-      <nav className="flex items-center justify-center gap-1 overflow-x-auto px-4 py-2 scrollbar-hide">
+      <nav className="flex items-center gap-1 overflow-x-auto px-3 py-2 sm:px-4 scrollbar-hide">
         {navCategories.map((category) => (
           <button
             key={category}

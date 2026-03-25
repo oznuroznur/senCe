@@ -6,7 +6,7 @@ import { breakingNews, hotTopics, relatedMarkets } from "@/lib/mock-data"
 
 export function HomeSidebar() {
   return (
-    <aside className="w-80 shrink-0 space-y-6">
+    <aside className="w-full shrink-0 space-y-6 lg:w-80">
       {/* Breaking News */}
       <section className="rounded-xl bg-card border border-border p-4">
         <div className="flex items-center justify-between mb-4">
@@ -69,7 +69,7 @@ export function HomeSidebar() {
 
 export function MarketSidebar() {
   return (
-    <aside className="w-80 shrink-0 space-y-4">
+    <aside className="w-full shrink-0 space-y-4">
       {/* Related Markets */}
       <section>
         <div className="flex items-center gap-2 overflow-x-auto pb-2">

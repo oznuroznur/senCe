@@ -10,43 +10,43 @@ export function FeaturedMarket() {
   const [betSide, setBetSide] = useState<"up" | "down">("up")
 
   return (
-    <section className="w-[80%] rounded-xl bg-card border border-border overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-6">
+    <section className="w-full rounded-xl border border-border bg-card overflow-hidden">
+      <div className="p-4 sm:p-6">
+        <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           {/* Market info */}
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-orange-500 text-white text-2xl font-bold">
               ₿
             </div>
             <div>
-              <h2 className="text-xl font-semibold">{featuredMarket.title}</h2>
+              <h2 className="text-lg font-semibold sm:text-xl">{featuredMarket.title}</h2>
               <p className="text-sm text-muted-foreground">{featuredMarket.endDate}</p>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="flex items-start gap-8 text-right">
+          <div className="grid grid-cols-1 gap-3 text-left sm:grid-cols-3 sm:gap-8 sm:text-right">
             <div>
               <p className="text-xs text-muted-foreground">Price To Beat</p>
-              <p className="text-2xl font-semibold">$71,890</p>
+              <p className="text-xl font-semibold sm:text-2xl">$71,890</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">
                 Current Price <span className="text-red-500">▼ $43</span>
               </p>
-              <p className="text-2xl font-semibold text-emerald-500">$71.848</p>
+              <p className="text-xl font-semibold text-emerald-500 sm:text-2xl">$71.848</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Ends in</p>
-              <p className="text-2xl font-semibold text-orange-500">4:07</p>
+              <p className="text-xl font-semibold text-orange-500 sm:text-2xl">4:07</p>
             </div>
           </div>
         </div>
 
         {/* Bet buttons and chart area */}
-        <div className="flex gap-6">
+        <div className="flex flex-col gap-6 xl:flex-row">
           {/* Left side - bet buttons and comments */}
-          <div className="w-80 shrink-0">
+          <div className="w-full shrink-0 xl:w-80">
             {/* Up/Down buttons */}
             <div className="flex gap-2 mb-4">
               <Button
@@ -73,7 +73,7 @@ export function FeaturedMarket() {
             </div>
 
             {/* Comments */}
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+            <div className="max-h-64 space-y-3 overflow-y-auto pr-1 sm:pr-2">
               {comments.map((comment, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium shrink-0">
@@ -92,7 +92,7 @@ export function FeaturedMarket() {
 
           {/* Right side - chart placeholder */}
           <div className="flex-1 relative">
-            <div className="h-64 rounded-lg bg-secondary/30 flex items-center justify-center relative">
+            <div className="relative flex h-56 items-center justify-center rounded-lg bg-secondary/30 sm:h-64">
               {/* Simple price visualization */}
               <div className="absolute inset-4">
                 <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="none">
@@ -114,7 +114,7 @@ export function FeaturedMarket() {
                   />
                 </svg>
                 {/* Target line */}
-                <div className="absolute right-0 top-1/4 flex items-center gap-2">
+                <div className="absolute left-2 right-2 top-1/4 flex items-center gap-2 sm:left-auto sm:right-0 sm:w-auto">
                   <div className="h-px w-full border-t border-dashed border-muted-foreground/30" />
                   <span className="bg-muted-foreground/20 text-xs px-2 py-1 rounded">Target ↗</span>
                 </div>
@@ -124,7 +124,7 @@ export function FeaturedMarket() {
                 <div className="absolute right-2 bottom-4 text-xs text-muted-foreground">$71,840</div>
               </div>
               {/* Live indicator */}
-              <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs">
+              <div className="absolute bottom-3 right-3 flex items-center gap-2 text-xs sm:bottom-4 sm:right-4">
                 <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-red-500 font-medium">LIVE</span>
                 <span className="text-muted-foreground">• ⊞ Polymarket</span>
@@ -146,7 +146,7 @@ export function FeaturedMarket() {
       </div>
 
       {/* Quick nav */}
-      <div className="flex items-center justify-center gap-4 py-3 border-t border-border">
+      <div className="flex flex-wrap items-center justify-center gap-2 border-t border-border px-3 py-3 sm:gap-4">
         <Button variant="ghost" size="sm" className="text-muted-foreground">
           <ChevronLeft className="h-4 w-4 mr-1" />
           Sports
@@ -155,7 +155,7 @@ export function FeaturedMarket() {
           Oil Prices
           <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
-        <Link href="/markets" className="ml-auto">
+        <Link href="/markets" className="sm:ml-auto">
           <Button variant="outline" size="sm">
             Explore all
           </Button>

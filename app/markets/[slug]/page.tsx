@@ -29,11 +29,11 @@ export default function MarketPage({ params }: MarketPageProps) {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <div className="flex gap-6">
+      <div className="flex flex-col gap-6 xl:flex-row">
         {/* Main content */}
         <div className="flex-1 min-w-0">
           {/* Header */}
-          <div className="flex items-start justify-between mb-6">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-2xl">
                 {displayMarket.icon}
@@ -48,7 +48,7 @@ export default function MarketPage({ params }: MarketPageProps) {
                     </>
                   )}
                 </div>
-                <h1 className="text-2xl font-bold">{displayMarket.title}</h1>
+                <h1 className="text-xl font-bold sm:text-2xl">{displayMarket.title}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export default function MarketPage({ params }: MarketPageProps) {
                   </div>
                 )
               })}
-              <div className="ml-auto flex items-center gap-2 text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground sm:ml-auto">
                 <span>⊞</span>
                 <span>Polymarket</span>
               </div>
@@ -151,13 +151,13 @@ export default function MarketPage({ params }: MarketPageProps) {
             </div>
 
             {/* Chart controls */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+            <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium">⊠ {displayMarket.totalVolume}</span>
                 <span>|</span>
                 <span>⊙ {displayMarket.endDate}</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide">
                 {timeRanges.map((range) => (
                   <button
                     key={range}
@@ -191,15 +191,15 @@ export default function MarketPage({ params }: MarketPageProps) {
                       : "border-border hover:border-muted-foreground/50"
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       <div className="font-medium">{outcome.name}</div>
                       <div className="text-sm text-muted-foreground">{outcome.volume}</div>
                       <Gift className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl font-bold">{outcome.percentage}%</span>
+                        <span className="text-xl font-bold sm:text-2xl">{outcome.percentage}%</span>
                         <span
                           className={`text-sm ${
                             outcome.change >= 0 ? "text-emerald-500" : "text-red-500"
@@ -208,7 +208,7 @@ export default function MarketPage({ params }: MarketPageProps) {
                           {outcome.change >= 0 ? "▲" : "▼"} {Math.abs(outcome.change)}%
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <Button
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700 text-white px-4"
@@ -232,7 +232,7 @@ export default function MarketPage({ params }: MarketPageProps) {
         </div>
 
         {/* Right sidebar - Prediction Panel */}
-        <div className="w-80 shrink-0 space-y-4">
+        <div className="w-full shrink-0 space-y-4 xl:w-80">
           <PredictionPanel
             market={displayMarket}
             selectedOutcome={selectedOutcome || displayMarket.outcomes?.[0]?.name}

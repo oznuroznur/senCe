@@ -12,7 +12,8 @@ import { Trophy } from "lucide-react"
 export function LeaderboardTable() {
   return (
     <div className="rounded-xl bg-card border border-border overflow-hidden">
-      <Table>
+      <div className="overflow-x-auto">
+      <Table className="min-w-160">
         <TableHeader>
           <TableRow className="border-border hover:bg-transparent">
             <TableHead className="w-16 text-center">Rank</TableHead>
@@ -76,6 +77,7 @@ export function LeaderboardTable() {
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   )
 }
