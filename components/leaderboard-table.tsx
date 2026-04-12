@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Table,
   TableBody,
@@ -6,10 +8,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { leaderboard, formatNumber } from "@/lib/mock-data"
 import { Trophy } from "lucide-react"
+import { useLeaderboard } from "@/hooks/use-leaderboard"
+import { formatPoints, mapLeaderboard } from "@/lib/sence-mappers"
+import { getReadableApiError } from "@/lib/api/error-utils"
 
 export function LeaderboardTable() {
+  const leaderboardQuery = useLeaderboard()
+  const leaderboard = mapLeaderboard(leaderboardQuery.data?.data ?? [])
+
+  if (leaderboardQuery.isLoading) {
+    return <div className="rounded-xl bg-card border border-border p-6 text-sm text-muted-foreground">Loading leaderboard...</div>
+  }
+
+  if (leaderboardQuery.isError) {
+    return <div className="rounded-xl bg-card border border-border p-6 text-sm text-red-500">{getReadableApiError(leaderboardQuery.error)}</div>
+  }
+
   return (
     <div className="rounded-xl bg-card border border-border overflow-hidden">
       <div className="overflow-x-auto">
@@ -55,7 +70,7 @@ export function LeaderboardTable() {
                 </div>
               </TableCell>
               <TableCell className="text-right font-semibold">
-                {formatNumber(user.points)}
+                {formatPoints(user.points)}
               </TableCell>
               <TableCell className="text-right">
                 <span

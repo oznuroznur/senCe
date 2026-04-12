@@ -1,12 +1,16 @@
 "use client"
 
-import { useState, use } from "react"
-import { notFound } from "next/navigation"
-import { Code, Eye, Bookmark, Gift, Settings } from "lucide-react"
+import { FormEvent, use, useMemo, useState } from "react"
+import { Bookmark, Code, Eye, Gift, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PredictionPanel } from "@/components/prediction-panel"
 import { MarketSidebar } from "@/components/home-sidebar"
-import { getMarketBySlug, nbaChampionMarket } from "@/lib/mock-data"
+import { useQuestionDetail } from "@/hooks/use-question-detail"
+import { usePlacePrediction } from "@/hooks/use-place-prediction"
+import { useComments } from "@/hooks/use-comments"
+import { useToggleBookmark, useToggleFollow, useToggleQuestionReaction } from "@/hooks/use-question-actions"
+import { getReadableApiError } from "@/lib/api/error-utils"
+import { mapCommentsToFeed } from "@/lib/sence-mappers"
 
 interface MarketPageProps {
   params: Promise<{ slug: string }>
@@ -14,23 +18,53 @@ interface MarketPageProps {
 
 export default function MarketPage({ params }: MarketPageProps) {
   const { slug } = use(params)
-  const market = getMarketBySlug(slug)
   const [selectedOutcome, setSelectedOutcome] = useState<string | null>(null)
   const [selectedSide, setSelectedSide] = useState<"yes" | "no">("yes")
   const [timeRange, setTimeRange] = useState("ALL")
+  const [commentBody, setCommentBody] = useState("")
+  const [replyToId, setReplyToId] = useState<string | null>(null)
+  const [replyBody, setReplyBody] = useState("")
 
-  if (!market) {
-    notFound()
+  const detail = useQuestionDetail(slug)
+  const market = detail.market
+  const placePredictionMutation = usePlacePrediction()
+
+  const questionId = detail.questionQuery.data?.id ?? ""
+  const commentsApi = useComments(questionId)
+  const toggleBookmarkMutation = useToggleBookmark()
+  const toggleFollowMutation = useToggleFollow()
+  const toggleReactionMutation = useToggleQuestionReaction(slug, questionId)
+
+  const commentFeed = useMemo(
+    () => mapCommentsToFeed(commentsApi.commentsQuery.data?.data ?? []),
+    [commentsApi.commentsQuery.data],
+  )
+
+  const isPageLoading = detail.questionQuery.isLoading || detail.statsQuery.isLoading
+  const pageError = detail.questionQuery.error || detail.statsQuery.error
+
+  if (isPageLoading) {
+    return <div className="container mx-auto px-4 py-10 text-sm text-muted-foreground">Loading market...</div>
+  }
+
+  if (pageError || !market || !questionId) {
+    return (
+      <div className="container mx-auto px-4 py-10 text-sm text-red-500">
+        {getReadableApiError(pageError)}
+      </div>
+    )
+  }
+
+  const question = detail.questionQuery.data
+  if (!question) {
+    return <div className="container mx-auto px-4 py-10 text-sm text-red-500">The requested resource was not found.</div>
   }
 
   const timeRanges = ["1H", "6H", "1D", "1W", "1M", "ALL"]
-
-  // Use NBA champion market for the detailed view
-  const displayMarket = slug === "2026-nba-champion" ? nbaChampionMarket : market
-  const yesPercent = displayMarket.yesPercentage
+  const yesPercent = market.yesPercentage
   const noPercent = 100 - yesPercent
-  const totalPool = displayMarket.totalVolume.replace(/Vol\.?/gi, "Pool")
-  const rawValues = displayMarket.chartData?.map((point) => point.value) ?? []
+  const totalPool = market.totalVolume
+  const rawValues = market.chartData?.map((point) => point.value) ?? []
   const rawMin = rawValues.length ? Math.min(...rawValues) : 0
   const rawMax = rawValues.length ? Math.max(...rawValues) : 100
   const normalizePercent = (value: number) => {
@@ -41,7 +75,7 @@ export default function MarketPage({ params }: MarketPageProps) {
     return Math.max(5, Math.min(95, Math.round(value)))
   }
   const chartSeries =
-    displayMarket.chartData?.map((point) => ({ time: point.time, value: normalizePercent(point.value) })) ??
+    market.chartData?.map((point) => ({ time: point.time, value: normalizePercent(point.value) })) ??
     [
       { time: "Jul", value: 48 },
       { time: "Aug", value: 52 },
@@ -61,38 +95,75 @@ export default function MarketPage({ params }: MarketPageProps) {
     return { time: point.time, open, close, high, low }
   })
 
+  async function handlePlacePrediction(payload: { optionId: string; xpWagered: number }) {
+    await placePredictionMutation.mutateAsync({
+      questionId,
+      optionId: payload.optionId,
+      xpWagered: payload.xpWagered,
+      slug,
+    })
+  }
+
+  async function handleCreateComment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!commentBody.trim()) return
+
+    await commentsApi.createCommentMutation.mutateAsync(commentBody.trim())
+    setCommentBody("")
+  }
+
+  async function handleReply(commentId: string) {
+    if (!replyBody.trim()) return
+
+    await commentsApi.replyCommentMutation.mutateAsync({ commentId, body: replyBody.trim() })
+    setReplyToId(null)
+    setReplyBody("")
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex flex-col gap-6 xl:flex-row">
-        {/* Main content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-secondary text-2xl">
-                {displayMarket.icon}
+                {market.icon}
               </div>
               <div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <span>{displayMarket.category}</span>
-                  {displayMarket.category === "Sports" && (
-                    <>
-                      <span>•</span>
-                      <span>NBA</span>
-                    </>
-                  )}
+                  <span>{market.category}</span>
+                  <span>•</span>
+                  <span>{question.type}</span>
                 </div>
-                <h1 className="text-xl font-bold sm:text-2xl">{displayMarket.title}</h1>
+                <h1 className="text-xl font-bold sm:text-2xl">{market.title}</h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground"
+                onClick={() => toggleReactionMutation.mutate("LIKE")}
+                disabled={toggleReactionMutation.isPending}
+              >
                 <Code className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground"
+                onClick={() => toggleFollowMutation.mutate({ questionId, slug })}
+                disabled={toggleFollowMutation.isPending}
+              >
                 <Eye className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground"
+                onClick={() => toggleBookmarkMutation.mutate({ questionId, slug })}
+                disabled={toggleBookmarkMutation.isPending}
+              >
                 <Bookmark className="h-5 w-5" />
               </Button>
             </div>
@@ -127,7 +198,6 @@ export default function MarketPage({ params }: MarketPageProps) {
             </div>
           </div>
 
-          {/* Chart area */}
           <div className="rounded-xl bg-card border border-border p-4 mb-4">
             <div className="h-64 relative">
               <svg className="w-full h-full" viewBox="0 0 800 250" preserveAspectRatio="none">
@@ -194,14 +264,13 @@ export default function MarketPage({ params }: MarketPageProps) {
               </div>
             </div>
 
-            {/* Chart controls */}
             <div className="mt-4 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="font-medium">Prediction Trend</span>
                 <span>|</span>
                 <span>{totalPool}</span>
                 <span>|</span>
-                <span>Ends {displayMarket.endDate}</span>
+                <span>Ends {market.endDate}</span>
               </div>
               <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide">
                 {timeRanges.map((range) => (
@@ -224,12 +293,11 @@ export default function MarketPage({ params }: MarketPageProps) {
             </div>
           </div>
 
-          {/* Outcomes list */}
-          {displayMarket.outcomes && (
+          {market.outcomes && (
             <div className="space-y-2">
-              {displayMarket.outcomes.map((outcome, idx) => (
+              {market.outcomes.map((outcome) => (
                 <div
-                  key={idx}
+                  key={outcome.id}
                   onClick={() => setSelectedOutcome(outcome.name)}
                   className={`rounded-xl bg-card border p-4 cursor-pointer transition-colors ${
                     selectedOutcome === outcome.name
@@ -257,8 +325,8 @@ export default function MarketPage({ params }: MarketPageProps) {
                       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <Button
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
+                          onClick={(event) => {
+                            event.stopPropagation()
                             setSelectedOutcome(outcome.name)
                             setSelectedSide("yes")
                           }}
@@ -268,8 +336,8 @@ export default function MarketPage({ params }: MarketPageProps) {
                         </Button>
                         <Button
                           size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
+                          onClick={(event) => {
+                            event.stopPropagation()
                             setSelectedOutcome(outcome.name)
                             setSelectedSide("no")
                           }}
@@ -285,17 +353,82 @@ export default function MarketPage({ params }: MarketPageProps) {
               ))}
             </div>
           )}
+
+          <section className="mt-6 rounded-xl bg-card border border-border p-4">
+            <h2 className="mb-3 text-lg font-semibold">Comments</h2>
+            <form onSubmit={handleCreateComment} className="mb-4 flex gap-2">
+              <input
+                value={commentBody}
+                onChange={(event) => setCommentBody(event.target.value)}
+                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                placeholder="Add a comment"
+              />
+              <Button type="submit" disabled={commentsApi.createCommentMutation.isPending}>
+                Post
+              </Button>
+            </form>
+
+            <div className="space-y-3">
+              {commentFeed.map((comment) => (
+                <div key={comment.id} className="rounded-lg border border-border p-3">
+                  <div className="mb-1 flex items-center justify-between">
+                    <p className="text-sm font-medium">{comment.displayName}</p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => {
+                          setReplyToId(comment.id)
+                          setReplyBody("")
+                        }}
+                      >
+                        Reply
+                      </button>
+                      <button
+                        className="text-xs text-red-500"
+                        onClick={() => commentsApi.deleteCommentMutation.mutate(comment.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{comment.comment}</p>
+
+                  {replyToId === comment.id && (
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={replyBody}
+                        onChange={(event) => setReplyBody(event.target.value)}
+                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                        placeholder="Reply to comment"
+                      />
+                      <Button onClick={() => handleReply(comment.id)} size="sm">
+                        Send
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Right sidebar - Prediction Panel */}
         <div className="w-full shrink-0 space-y-4 xl:w-80">
           <PredictionPanel
-            market={displayMarket}
-            selectedOutcome={selectedOutcome || displayMarket.outcomes?.[0]?.name}
+            market={market}
+            selectedOutcome={selectedOutcome || market.outcomes?.[0]?.name}
             initialChoice={selectedSide}
+            onPlacePrediction={handlePlacePrediction}
+            isSubmitting={placePredictionMutation.isPending}
+            submitError={placePredictionMutation.isError ? getReadableApiError(placePredictionMutation.error) : null}
           />
-          <MarketSidebar />
+          <MarketSidebar excludedQuestionId={questionId} />
         </div>
+      </div>
+
+      <div className="mt-3 text-xs text-muted-foreground">
+        {detail.myParticipationQuery.data
+          ? `Your prediction: ${detail.myParticipationQuery.data.xpWagered} XP`
+          : "No prediction placed yet."}
       </div>
     </div>
   )

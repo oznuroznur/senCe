@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Clock, Layers } from "lucide-react"
-import type { Market } from "@/lib/mock-data"
+import type { Market } from "@/lib/ui-models"
 
 interface MarketCardProps {
   market: Market

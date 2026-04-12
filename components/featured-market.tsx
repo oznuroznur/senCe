@@ -4,13 +4,34 @@ import { useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { featuredMarket, comments } from "@/lib/mock-data"
+import { useQuestions } from "@/hooks/use-questions"
+import { useQuestionDetail } from "@/hooks/use-question-detail"
+import { getReadableApiError } from "@/lib/api/error-utils"
 
 export function FeaturedMarket() {
   const [predictionSide, setPredictionSide] = useState<"yes" | "no">("yes")
+  const questionsQuery = useQuestions({ page: 1, limit: 1 })
+  const featuredSlug = questionsQuery.data?.data[0]?.slug || ""
+  const detail = useQuestionDetail(featuredSlug, { commentsLimit: 5 })
+
+  if (questionsQuery.isLoading || detail.questionQuery.isLoading) {
+    return <section className="w-full rounded-xl border border-border bg-card p-8 text-sm text-muted-foreground">Loading featured market...</section>
+  }
+
+  if (questionsQuery.isError || detail.questionQuery.isError || !detail.market) {
+    return (
+      <section className="w-full rounded-xl border border-border bg-card p-8 text-sm text-red-500">
+        {getReadableApiError(questionsQuery.error ?? detail.questionQuery.error)}
+      </section>
+    )
+  }
+
+  const featuredMarket = detail.market
+  const comments = detail.commentsFeed
+
   const yesPercent = featuredMarket.yesPercentage
   const noPercent = 100 - yesPercent
-  const totalPool = featuredMarket.totalVolume.replace(/Vol\.?/gi, "Pool")
+  const totalPool = featuredMarket.totalVolume
   const trendPoints = [52, 55, 53, 58, 61, 65, 63, 69, 71, 74, 72, yesPercent]
   const chartWidth = 420
   const chartHeight = 180
@@ -117,8 +138,8 @@ export function FeaturedMarket() {
 
             {/* Comments */}
             <div className="max-h-64 space-y-3 overflow-y-auto pr-1 sm:pr-2">
-              {comments.map((comment, idx) => (
-                <div key={idx} className="flex items-start gap-2">
+              {comments.map((comment) => (
+                <div key={comment.id} className="flex items-start gap-2">
                   <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium shrink-0">
                     {comment.avatar}
                   </div>

@@ -5,15 +5,25 @@ import Link from "next/link"
 import { useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import type { Market } from "@/lib/mock-data"
+import type { Market } from "@/lib/ui-models"
 
 interface PredictionPanelProps {
   market: Market
   selectedOutcome?: string
   initialChoice?: "yes" | "no"
+  isSubmitting?: boolean
+  submitError?: string | null
+  onPlacePrediction?: (payload: { optionId: string; xpWagered: number }) => Promise<void> | void
 }
 
-export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes" }: PredictionPanelProps) {
+export function PredictionPanel({
+  market,
+  selectedOutcome,
+  initialChoice = "yes",
+  isSubmitting = false,
+  submitError,
+  onPlacePrediction,
+}: PredictionPanelProps) {
   const [choice, setChoice] = useState<"yes" | "no">(initialChoice)
   const [points, setPoints] = useState("")
   const { isSignedIn } = useAuth()
@@ -29,8 +39,25 @@ export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes"
   const pointsNum = parseFloat(points) || 0
   const selectedPercent = choice === "yes" ? yesPercent : noPercent
   const payoutPreview = selectedPercent > 0 ? pointsNum * (100 / selectedPercent) : 0
+  const selectedMarketOutcome = market.outcomes.find((outcome) => outcome.name === selectedOutcome) ?? market.outcomes[0]
+  const fallbackNoOutcome = market.outcomes.find((outcome) => outcome.id !== selectedMarketOutcome?.id)
 
   const quickPoints = [10, 50, 100, 250]
+
+  async function handlePlacePrediction() {
+    if (!onPlacePrediction || pointsNum <= 0) {
+      return
+    }
+
+    const optionId =
+      choice === "yes" ? selectedMarketOutcome?.id : fallbackNoOutcome?.id ?? selectedMarketOutcome?.id
+
+    if (!optionId) {
+      return
+    }
+
+    await onPlacePrediction({ optionId, xpWagered: pointsNum })
+  }
 
   return (
     <div className="rounded-xl bg-card border border-border p-4 lg:sticky lg:top-20">
@@ -125,7 +152,11 @@ export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes"
 
       {/* Place prediction */}
       {isSignedIn ? (
-        <Button className="mb-3 h-12 w-full bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700">
+        <Button
+          onClick={handlePlacePrediction}
+          disabled={isSubmitting || pointsNum < 10}
+          className="mb-3 h-12 w-full bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700"
+        >
           Place Prediction
         </Button>
       ) : (
@@ -137,6 +168,8 @@ export function PredictionPanel({ market, selectedOutcome, initialChoice = "yes"
       <p className="text-xs text-muted-foreground text-center mb-4">
         By placing a prediction, you agree to the <span className="underline cursor-pointer">Terms of Use</span>.
       </p>
+
+      {submitError && <p className="mb-4 text-xs text-red-500 text-center">{submitError}</p>}
 
       {/* Payout preview */}
       {pointsNum > 0 && (

@@ -2,9 +2,16 @@
 
 import { ChevronRight, Flame } from "lucide-react"
 import Link from "next/link"
-import { breakingNews, hotTopics, relatedMarkets } from "@/lib/mock-data"
+import { useQuestions } from "@/hooks/use-questions"
+import { useTopics } from "@/hooks/use-topics"
+import { mapQuestionsToBreakingNews, mapQuestionsToRelatedMarkets, mapTopicsToHotTopics } from "@/lib/sence-mappers"
 
 export function HomeSidebar() {
+  const questionsQuery = useQuestions({ page: 1, limit: 8 })
+  const topicsQuery = useTopics()
+  const breakingNews = mapQuestionsToBreakingNews(questionsQuery.data?.data ?? [])
+  const hotTopics = mapTopicsToHotTopics(topicsQuery.data ?? [])
+
   return (
     <aside className="w-full shrink-0 space-y-6 lg:w-80">
       {/* Breaking News */}
@@ -17,7 +24,7 @@ export function HomeSidebar() {
           {breakingNews.map((item, idx) => (
             <Link
               key={item.id}
-              href="#"
+              href={`/markets/${item.slug}`}
               className="flex items-start gap-3 group"
             >
               <span className="text-sm text-muted-foreground">{idx + 1}</span>
@@ -47,7 +54,7 @@ export function HomeSidebar() {
           {hotTopics.map((topic, idx) => (
             <Link
               key={topic.id}
-              href="#"
+              href="/"
               className="flex items-center gap-3 group"
             >
               <span className="text-sm text-muted-foreground">{idx + 1}</span>
@@ -67,7 +74,14 @@ export function HomeSidebar() {
   )
 }
 
-export function MarketSidebar() {
+interface MarketSidebarProps {
+  excludedQuestionId?: string
+}
+
+export function MarketSidebar({ excludedQuestionId }: MarketSidebarProps) {
+  const relatedQuery = useQuestions({ page: 1, limit: 6 })
+  const relatedMarkets = mapQuestionsToRelatedMarkets(relatedQuery.data?.data ?? [], excludedQuestionId)
+
   return (
     <aside className="w-full shrink-0 space-y-4">
       {/* Related Markets */}
@@ -90,8 +104,8 @@ export function MarketSidebar() {
         <div className="mt-4 space-y-3">
           {relatedMarkets.map((market, idx) => (
             <Link
-              key={idx}
-              href="#"
+              key={market.id}
+              href={`/markets/${market.slug}`}
               className="flex items-start gap-3 group"
             >
               <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-lg shrink-0">

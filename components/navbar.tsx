@@ -5,11 +5,13 @@ import { Search, HelpCircle } from "lucide-react"
 import { ClerkLoaded, ClerkLoading, Show, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { navCategories } from "@/lib/mock-data"
 import { useState } from "react"
+import { useTopics } from "@/hooks/use-topics"
 
 export function Navbar() {
   const [activeCategory, setActiveCategory] = useState("Trending")
+  const topicsQuery = useTopics()
+  const navCategories = ["Trending", ...(topicsQuery.data?.slice(0, 12).map((topic) => topic.name) ?? [])]
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">

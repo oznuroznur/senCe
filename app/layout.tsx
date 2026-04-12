@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Navbar } from '@/components/navbar'
+import { QueryProvider } from '@/components/query-provider'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -44,9 +45,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="font-sans antialiased min-h-screen bg-background text-foreground">
         <ClerkProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Analytics />
+          <QueryProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Analytics />
+          </QueryProvider>
         </ClerkProvider>
       </body>
     </html>
